@@ -1,56 +1,143 @@
 package android.exercise.mini.calculator.app;
 
+import android.text.TextUtils;
+
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 public class SimpleCalculatorImpl implements SimpleCalculator {
 
-  // todo: add fields as needed
+  private ArrayList<String> history = new ArrayList<>();
+  private int historyLastIdx;
+  private int res;
+
+  public SimpleCalculatorImpl()
+  {
+    history.add("0");
+    historyLastIdx = 0;
+    res = 0;
+  }
 
   @Override
   public String output() {
-    // todo: return output based on the current state
-    return "implement me please";
+    if(historyLastIdx == 0 && history.get(0).equals("0"))
+    {
+      return Integer.toString(res);
+    }
+    else
+    {
+      StringBuilder str = new StringBuilder();
+      for(int i = 0; i <= historyLastIdx; i++)
+      {
+        str.append(history.get(i));
+      }
+      return str.toString();
+    }
   }
 
   @Override
   public void insertDigit(int digit) {
-    // todo: insert a digit
+    if(history.get(0).equals("0") && historyLastIdx == 0)
+    {
+      history.remove(0);
+      historyLastIdx--;
+    }
+    if (digit >= 0 && digit <=9)
+    {
+      history.add(Integer.toString(digit));
+      historyLastIdx++;
+    }
+    else
+    {
+      throw new IllegalArgumentException();
+    }
   }
 
   @Override
   public void insertPlus() {
-    // todo: insert a plus
+    if(history.get(historyLastIdx).equals("+") || history.get(historyLastIdx).equals("-"))
+    {
+      return;
+    }
+    history.add("+");
+    historyLastIdx++;
   }
 
   @Override
   public void insertMinus() {
-    // todo: insert a minus
+    if(history.get(historyLastIdx).equals("+") || history.get(historyLastIdx).equals("-"))
+    {
+      return;
+    }
+    history.add("-");
+    historyLastIdx++;
   }
 
   @Override
   public void insertEquals() {
-    // todo: calculate the equation. after calling `insertEquals()`, the output should be the result
-    //  e.g. given input "14+3", calling `insertEquals()`, and calling `output()`, output should be "17"
+    ArrayList<String> calc = new ArrayList<>();
+    StringBuilder temp = new StringBuilder("0");
+    for (int i = 0; i <= historyLastIdx; i++) {
+      if (history.get(i).equals("+"))
+      {
+        calc.add(temp.toString());
+        temp = new StringBuilder();
+      }
+      else if (history.get(i).equals("-"))
+      {
+        calc.add(temp.toString());
+        temp = new StringBuilder();
+        temp.append(history.get(i));
+      }
+      else
+        {
+        temp.append(history.get(i));
+        }
+    }
+    calc.add(temp.toString());
+
+    for (int j = 0; j < calc.size(); j++)
+      {
+        res += Integer.parseInt(calc.get(j));
+      }
+
+    history.clear();
+    history.add(Integer.toString(res));
+    historyLastIdx = 0;
+    res = 0;
   }
 
   @Override
   public void deleteLast() {
-    // todo: delete the last input (digit, plus or minus)
-    //  e.g.
-    //  if input was "12+3" and called `deleteLast()`, then delete the "3"
-    //  if input was "12+" and called `deleteLast()`, then delete the "+"
-    //  if no input was given, then there is nothing to do here
+    if(history.isEmpty())
+    {
+      history.add("0");
+      historyLastIdx++;
+      return;
+    }
+
+    if(history.get(0).equals("0") && historyLastIdx == 0)
+    {
+      return;
+    }
+    history.remove(historyLastIdx);
+    historyLastIdx--;
+
   }
 
   @Override
   public void clear() {
-    // todo: clear everything (same as no-input was never given)
+    history.clear();
+    history.add("0");
+    res = 0;
+    historyLastIdx = 0;
   }
 
   @Override
   public Serializable saveState() {
     CalculatorState state = new CalculatorState();
-    // todo: insert all data to the state, so in the future we can load from this state
+    state.set(history, historyLastIdx, res);
     return state;
   }
 
@@ -60,17 +147,34 @@ public class SimpleCalculatorImpl implements SimpleCalculator {
       return; // ignore
     }
     CalculatorState casted = (CalculatorState) prevState;
-    // todo: use the CalculatorState to load
+    history = casted.getHistory();
+    historyLastIdx = casted.getHistoryLastIdx();
+    res = casted.getRes();
   }
 
   private static class CalculatorState implements Serializable {
-    /*
-    TODO: add fields to this class that will store the calculator state
-    all fields must only be from the types:
-    - primitives (e.g. int, boolean, etc)
-    - String
-    - ArrayList<> where the type is a primitive or a String
-    - HashMap<> where the types are primitives or a String
-     */
+    private ArrayList<String> historyS = new ArrayList<>();
+    private int historyLastIdxS;
+    private int resS;
+
+    public void set(ArrayList<String> historyArr, int historyLastIdx, int res)
+    {
+      historyS = new ArrayList<>(historyArr);
+      historyLastIdxS = historyLastIdx;
+      resS = res;
+    }
+
+    public ArrayList<String> getHistory()
+    {
+      return historyS;
+    }
+    public int getHistoryLastIdx()
+    {
+      return historyLastIdxS;
+    }
+    public int getRes()
+    {
+      return resS;
+    }
   }
 }

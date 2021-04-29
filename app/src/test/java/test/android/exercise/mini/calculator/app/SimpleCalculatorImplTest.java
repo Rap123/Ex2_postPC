@@ -1,7 +1,9 @@
 package test.android.exercise.mini.calculator.app;
 
+import android.exercise.mini.calculator.app.SimpleCalculator;
 import android.exercise.mini.calculator.app.SimpleCalculatorImpl;
 
+import org.checkerframework.common.value.qual.StaticallyExecutable;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -29,7 +31,7 @@ public class SimpleCalculatorImplTest {
   public void when_inputIsMinus_then_outputShouldBeCorrect(){
     SimpleCalculatorImpl calculatorUnderTest = new SimpleCalculatorImpl();
     calculatorUnderTest.insertMinus();
-    String expected = "???"; // TODO: decide the expected output when having a single minus
+    String expected = "0-";
     assertEquals(expected, calculatorUnderTest.output());
   }
 
@@ -47,12 +49,27 @@ public class SimpleCalculatorImplTest {
 
   @Test
   public void when_callingDeleteLast_then_lastOutputShouldBeDeleted(){
-    // todo: implement test
+    SimpleCalculatorImpl calculatorUnderTest = new SimpleCalculatorImpl();
+    calculatorUnderTest.insertDigit(1);
+    calculatorUnderTest.insertPlus();
+    calculatorUnderTest.insertDigit(3);
+    calculatorUnderTest.insertDigit(5);
+    calculatorUnderTest.deleteLast();
+    String expected = "1+3";
+    assertEquals(expected, calculatorUnderTest.output());
+
   }
 
   @Test
   public void when_callingClear_then_outputShouldBeCleared(){
-    // todo: implement test
+    SimpleCalculatorImpl calculatorUnderTest = new SimpleCalculatorImpl();
+    calculatorUnderTest.insertDigit(1);
+    calculatorUnderTest.insertPlus();
+    calculatorUnderTest.insertDigit(3);
+    calculatorUnderTest.insertDigit(5);
+    calculatorUnderTest.clear();
+    String expected = "0";
+    assertEquals(expected, calculatorUnderTest.output());
   }
 
   @Test
@@ -80,8 +97,15 @@ public class SimpleCalculatorImplTest {
   public void when_savingStateFromFirstCalculator_should_loadStateCorrectlyFromSecondCalculator(){
     SimpleCalculatorImpl firstCalculator = new SimpleCalculatorImpl();
     SimpleCalculatorImpl secondCalculator = new SimpleCalculatorImpl();
-    // TODO: implement the test based on this method's name.
-    //  you can get inspiration from the test method `when_savingState_should_loadThatStateCorrectly()`
+    firstCalculator.insertDigit(1);
+    firstCalculator.insertPlus();
+    firstCalculator.insertDigit(3);
+    firstCalculator.insertDigit(5);
+    Serializable saveFirst = firstCalculator.saveState();
+    assertNotNull(saveFirst);
+    secondCalculator.loadState(saveFirst);
+    assertEquals("1+35", secondCalculator.output());
+
   }
 
   // TODO:
@@ -95,4 +119,161 @@ public class SimpleCalculatorImplTest {
   //  - with 2 calculators, give them different inputs, then save state on first calculator and load the state into second calculator, make sure state loaded well
   //  etc etc.
   //  feel free to be creative in your tests!
+
+  @Test
+  public void when_insertingMoreThanOneDigitInArow_should_calculateAsAfullNumber()
+  {
+    SimpleCalculatorImpl simpleCalculator = new SimpleCalculatorImpl();
+    simpleCalculator.insertDigit(1);
+    simpleCalculator.insertDigit(2);
+    simpleCalculator.insertPlus();
+    simpleCalculator.insertDigit(1);
+    simpleCalculator.insertDigit(5);
+    simpleCalculator.insertEquals();
+    String out = simpleCalculator.output();
+    assertEquals("27", out);
+  }
+
+  @Test
+  public void when_insertingEqualSignAndThanMoreDigits_should_calculateAndPrintBothInOutput()
+  {
+    SimpleCalculatorImpl simpleCalculator = new SimpleCalculatorImpl();
+    simpleCalculator.insertDigit(1);
+    simpleCalculator.insertDigit(2);
+    simpleCalculator.insertMinus();
+    simpleCalculator.insertDigit(1);
+    simpleCalculator.insertDigit(5);
+    simpleCalculator.insertEquals();
+    simpleCalculator.insertMinus();
+    simpleCalculator.insertDigit(3);
+    simpleCalculator.insertDigit(3);
+    String out = simpleCalculator.output();
+    assertEquals("-3-33", out);
+  }
+
+  @Test
+  public void when_clearAfterClear_should_justClearAndReturnOutput0()
+  {
+    SimpleCalculatorImpl simpleCalculator = new SimpleCalculatorImpl();
+    simpleCalculator.insertDigit(1);
+    simpleCalculator.insertDigit(2);
+    simpleCalculator.insertMinus();
+    simpleCalculator.insertDigit(1);
+    simpleCalculator.insertDigit(5);
+    simpleCalculator.insertEquals();
+    simpleCalculator.insertMinus();
+    simpleCalculator.insertDigit(3);
+    simpleCalculator.insertDigit(3);
+    simpleCalculator.clear();
+    simpleCalculator.clear();
+    simpleCalculator.clear();
+    assertEquals("0", simpleCalculator.output());
+  }
+
+  @Test
+  public void when_deleteMoreCharsThanExists_should_returnOutput0()
+  {
+    SimpleCalculatorImpl simpleCalculator = new SimpleCalculatorImpl();
+    simpleCalculator.insertDigit(3);
+    simpleCalculator.insertMinus();
+    simpleCalculator.insertDigit(1);
+    simpleCalculator.deleteLast();
+    simpleCalculator.deleteLast();
+    simpleCalculator.deleteLast();
+    simpleCalculator.deleteLast();
+    simpleCalculator.deleteLast();
+    simpleCalculator.deleteLast();
+    assertEquals("0", simpleCalculator.output());
+  }
+
+  @Test
+  public void when_insertEqualsWithMinusAtStart_should_calculateWithNegative()
+  {
+    SimpleCalculatorImpl simpleCalculator = new SimpleCalculatorImpl();
+    simpleCalculator.insertMinus();
+    simpleCalculator.insertDigit(7);
+    simpleCalculator.insertPlus();
+    simpleCalculator.insertDigit(5);
+    simpleCalculator.insertEquals();
+    assertEquals("-2", simpleCalculator.output());
+  }
+
+  @Test
+  public void when_insertFewPlusesInArow_should_insertJustOnePlus()
+  {
+    SimpleCalculatorImpl simpleCalculator = new SimpleCalculatorImpl();
+    simpleCalculator.insertDigit(5);
+    simpleCalculator.insertPlus();
+    simpleCalculator.insertPlus();
+    simpleCalculator.insertPlus();
+    simpleCalculator.insertPlus();
+    simpleCalculator.insertPlus();
+    assertEquals("5+", simpleCalculator.output());
+  }
+
+  @Test
+  public void when_insertFewMinusesInArow_should_insertJustOneMinus()
+  {
+    SimpleCalculatorImpl simpleCalculator = new SimpleCalculatorImpl();
+    simpleCalculator.insertDigit(5);
+    simpleCalculator.insertMinus();
+    simpleCalculator.insertMinus();
+    simpleCalculator.insertMinus();
+    simpleCalculator.insertMinus();
+    simpleCalculator.insertMinus();
+    assertEquals("5-", simpleCalculator.output());
+  }
+
+  @Test
+  public void when_insertMinusAntThanPlus_should_ignoreTheLast()
+  {
+    SimpleCalculatorImpl simpleCalculator = new SimpleCalculatorImpl();
+    simpleCalculator.insertDigit(5);
+    simpleCalculator.insertMinus();
+    simpleCalculator.insertPlus();
+    assertEquals("5-", simpleCalculator.output());
+  }
+
+  @Test
+  public void when_insertPlusAntThanMinus_should_ignoreTheLast()
+  {
+    SimpleCalculatorImpl simpleCalculator = new SimpleCalculatorImpl();
+    simpleCalculator.insertDigit(5);
+    simpleCalculator.insertPlus();
+    simpleCalculator.insertMinus();
+    assertEquals("5+", simpleCalculator.output());
+  }
+
+  @Test
+  public void when_insertFewEqualsInArow_should_printTheSameResultAgain()
+  {
+    SimpleCalculatorImpl simpleCalculator = new SimpleCalculatorImpl();
+    simpleCalculator.insertDigit(5);
+    simpleCalculator.insertPlus();
+    simpleCalculator.insertDigit(7);
+    simpleCalculator.insertEquals();
+    simpleCalculator.insertEquals();
+    simpleCalculator.insertEquals();
+    simpleCalculator.insertEquals();
+    simpleCalculator.insertEquals();
+
+    assertEquals("12", simpleCalculator.output());
+  }
+
+  @Test
+  public void when_insertMoreThanOneEquals_should_printAllCalculations()
+  {
+    SimpleCalculatorImpl simpleCalculator = new SimpleCalculatorImpl();
+    simpleCalculator.insertDigit(5);
+    simpleCalculator.insertPlus();
+    simpleCalculator.insertDigit(7);
+    simpleCalculator.insertEquals();
+    simpleCalculator.insertDigit(2);
+    simpleCalculator.insertPlus();
+    simpleCalculator.insertDigit(4);
+    simpleCalculator.insertEquals();
+    simpleCalculator.insertDigit(5);
+    simpleCalculator.insertPlus();
+    assertEquals("1265+", simpleCalculator.output());
+  }
 }
